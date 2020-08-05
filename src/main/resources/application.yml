@@ -1,0 +1,14 @@
+spring:
+
+  # 서버 재시작 없이 정적 리소스 리로딩 가능하도록
+  devtools:
+    livereload:
+      enabled: true
+
+  datasource:
+    hikari:
+      driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+      jdbc-url: 
+      username: 
+      password: 
+

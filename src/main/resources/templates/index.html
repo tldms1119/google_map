@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Map</title>
+    <script src = "https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap&libraries=places&v=weekly&region=KR"
+      defer
+    ></script>
+    <style type="text/css">
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .title {
+        font-weight: bold;
+      }
+
+      #infowindow-content {
+        display: none;
+      }
+
+      #map #infowindow-content {
+        display: inline;
+      }
+    </style>
+    <script type="text/javascript">
+      "use strict";
+      var map;
+      var service;
+      
+      $(document).ready(function(){
+      });
+
+      function initMap() {
+        const origin = { lat: 37.566686, lng: 126.978122 };
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 15,
+          center: origin
+        });
+        
+        map.addListener('click', function(e){
+        	console.log(e.latLng);
+        });
+        
+        var circle = new google.maps.Circle({
+            strokeColor: '#FF0000', //원 바깥 선 색
+            strokeOpacity: 0.8, // 바깥 선 투명도
+            strokeWeight: 1, //바깥 선 두께
+            fillColor: '#FF0000', //선안의 색
+            fillOpacity: 0.2,// 토명도
+            center: origin, //위치 좌표
+            radius: 500, // 반경, 단위: m
+            map: map
+        });
+        
+        getPoiList();
+      }
+      
+      function getPoiList(){
+    	  $.ajax({
+              url : "/poiList",
+              type : "GET",
+              dataType : "json",
+              cache : false,
+              success : function(data) {
+            	   console.log(data);
+                   callback(data);
+              },
+              error : function(request, error) {
+                  alert("Error");
+              }
+          });
+      }
+      
+      function callback(results){
+    	  var koMap = results.ko;
+    	  var enMap = results.en;
+    	  
+   		  $.map(koMap, function(value, key){
+   			  createMarker(value, enMap[key]);
+   		  });
+      }
+      
+      function createMarker(place, place_en){
+    	  var lat = parseFloat(place.mapPositionY);
+    	  var lng = parseFloat(place.mapPositionX);
+    	  var position = new google.maps.LatLng(lat, lng);
+    	  
+    	  var marker = new google.maps.Marker({
+    		  position: position,
+    		  map: map,
+    	      title: place.postSj,
+    	      animation: google.maps.Animation.DROP
+    	  });
+    	  
+    	  var contentString = '';
+    	  if(place_en){
+    		  contentString = '<div id="content">'+
+	          					'<h1 id="firstHeading" class="firstHeading">'+ place.postSj + '</h1>'+
+	          						'<div id="bodyContent">'+
+		          						'<p>' + place.sumry + '</p>'+
+								        '<p>zip code : ' + place.zipCode + '</p>'+
+								        '<p>' + place.adres + '</p>'+
+		      						'</div>'+
+		      						'<h1 id="firstHeading" class="firstHeading">'+ place_en.postSj + '</h1>'+
+	          						'<div id="bodyContent">'+
+		          						'<p>' + place_en.sumry + '</p>'+
+								        '<p>' + place_en.adres + '</p>'+
+		      						'</div>'+
+	       						'</div>';
+    		  
+    	  } else {
+	    	  contentString = '<div id="content">'+
+							          '<div id="siteNotice">'+
+							          '</div>'+
+							          '<h1 id="firstHeading" class="firstHeading">'+ place.postSj + '</h1>'+
+							          '<div id="bodyContent">'+
+								          '<p>' + place.sumry + '</p>'+
+								          '<p>zip code : ' + place.zipCode + '</p>'+
+								          '<p>' + place.adres + '</p>'+
+								      '</div>'+
+							       '</div>';
+    	  }
+    	  
+    	  var infowindow = new google.maps.InfoWindow({
+    		  content: contentString
+    	  });
+    	  
+    	  marker.addListener('click', function(){
+    		  infowindow.open(map, marker);
+    	  });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="infowindow-content">
+      <img id="place-icon" src="" height="16" width="16" />
+      <span id="place-name" class="title"></span><br />
+      Place ID <span id="place-id"></span><br />
+      <span id="place-address"></span>
+    </div>
+  </body>
+</html>

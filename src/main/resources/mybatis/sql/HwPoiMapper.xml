@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hwPoiMapper">
+
+    <select id="selectPoiList" resultType="com.study.sweetk.repository.vo.HwPoiVo">
+        SELECT
+        	*
+        FROM (
+          	SELECT
+          		a.*,
+          		(6371 * acos(cos(radians(37.566686)) * cos(radians(map_position_y)) * cos(radians(map_position_x) - radians(126.978122)) + sin(radians(37.566686)) * sin(radians(map_position_y)))) DISTANCE
+          	FROM HW_POI a
+        )
+        WHERE 
+        	DISTANCE &lt;= 0.5
+    </select>
+</mapper>
